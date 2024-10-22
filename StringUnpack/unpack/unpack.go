@@ -18,7 +18,7 @@ func Unpack(str string, isRaw bool) (string, error) {
 	}
 	runes := []rune(str)
 	if unicode.IsDigit(runes[0]) {
-		return "", errors.New("error. String cannot start with digit.")
+		return "", errors.New("error. String cannot start with digit")
 	}
 	var buf strings.Builder
 	for i, v := range runes {
@@ -29,7 +29,7 @@ func Unpack(str string, isRaw bool) (string, error) {
 					return "", errors.New("error. String cannot contain numbers >9")
 				}
 				if unicode.IsLetter(v) && runes[i-1] == '_' {
-					return "", errors.New("error. cannot escape letter in escaping mode.")
+					return "", errors.New("error. cannot escape letter in escaping mode")
 				}
 			}
 			if unicode.IsDigit(v) && runes[i-1] != '_' && int(v-49) >= 0 {
