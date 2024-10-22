@@ -20,10 +20,9 @@ type Polygon struct {
 	Point []Point
 }
 
-//---
+// ---
 type Polygon2 []Point
 
-func (p Polygon2) Test(){
-	
-}
+func (p Polygon2) Test() {
 
+}
