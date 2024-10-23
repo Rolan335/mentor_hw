@@ -17,6 +17,11 @@ func TestUnpack(t *testing.T) {
 		wantErr error
 	}{
 		{
+			name: "Empty string provided. Any mode.",
+			args: args{"", false},
+			want: "",
+		},
+		{
 			name:    "Valid string provided. not Raw",
 			args:    args{"\n4a4b1c2d5e0fgh4i0", false},
 			want:    `"\n\n\n\naaaabccdddddfghhhh"`,
@@ -25,7 +30,7 @@ func TestUnpack(t *testing.T) {
 		{
 			name:    "String contains number >9. Not raw",
 			args:    args{"a4b21", false},
-			wantErr: errors.New("error. String cannot contain numbers >9"),
+			wantErr: errors.New("error. String cannot contain numbers >9 or 00, 01, 02, etc"),
 		},
 		{
 			name:    "Valid string provided. Raw",
@@ -40,11 +45,16 @@ func TestUnpack(t *testing.T) {
 		{
 			name:    "String contains number >9. Raw",
 			args:    args{`a4b21`, true},
-			wantErr: errors.New("error. String cannot contain numbers >9"),
+			wantErr: errors.New("error. String cannot contain numbers >9 or 00, 01, 02, etc"),
 		},
 		{
-			name:    "Escape letters in raw mode. Raw",
-			args:    args{`\a4b21`, true},
+			name:    "Escape letters at the end in raw mode. Raw",
+			args:    args{`b2\1\n`, true},
+			wantErr: errors.New("error. cannot escape letter in escaping mode"),
+		},
+		{
+			name:    "Escape letters at the start in raw mode. Raw",
+			args:    args{`\nb2\1`, true},
 			wantErr: errors.New("error. cannot escape letter in escaping mode"),
 		},
 	}
