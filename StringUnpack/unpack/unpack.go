@@ -27,7 +27,7 @@ func Unpack(str string, isRaw bool) (string, error) {
 				if unicode.IsDigit(v) && string(runes[i-1]) != `\` && unicode.IsDigit(runes[i+1]) {
 					return "", errors.New("error. String cannot contain numbers >9 or 00, 01, 02, etc")
 				}
-				if unicode.IsLetter(v) && string(runes[i-1]) == `\` || (string(v) == `\` && unicode.IsLetter(runes[i+1])){
+				if (unicode.IsLetter(v) && string(runes[i-1]) == `\`) || (string(v) == `\` && unicode.IsLetter(runes[i+1])){
 					return "", errors.New("error. cannot escape letter in escaping mode")
 				}
 			}
