@@ -33,14 +33,15 @@ func TestStack_Push(t *testing.T) {
 
 func TestStack_Pop(t *testing.T) {
 	tests := []struct {
-		name string
-		s    *Stack
-		want interface{}
+		name    string
+		s       *Stack
+		want    interface{}
+		wantErr error
 	}{
 		{
-			name: "Pop len 0",
-			s:    &Stack{},
-			want: errors.New("error. Stack len is 0"),
+			name:    "Pop len 0",
+			s:       &Stack{},
+			wantErr: errors.New("error. Stack len is 0"),
 		},
 		{
 			name: "Pop len >0",
@@ -50,8 +51,13 @@ func TestStack_Pop(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.s.Pop(); !reflect.DeepEqual(got, tt.want) {
+			got, err := tt.s.Pop()
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Stack.Pop() = %v, want %v", got, tt.want)
+			}
+			if err != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("Pack() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}
@@ -59,14 +65,15 @@ func TestStack_Pop(t *testing.T) {
 
 func TestStack_Peek(t *testing.T) {
 	tests := []struct {
-		name string
-		s    Stack
-		want interface{}
+		name    string
+		s       Stack
+		want    interface{}
+		wantErr error
 	}{
 		{
-			name: "Peek len 0",
-			s:    Stack{},
-			want: errors.New("error. Stack len is 0"),
+			name:    "Peek len 0",
+			s:       Stack{},
+			wantErr: errors.New("error. Stack len is 0"),
 		},
 		{
 			name: "Peek len >0",
@@ -76,8 +83,13 @@ func TestStack_Peek(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.s.Peek(); !reflect.DeepEqual(got, tt.want) {
+			got, err := tt.s.Peek()
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Stack.Peek() = %v, want %v", got, tt.want)
+			}
+			if err != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("Stack.Peek() = %v, want %v", err, tt.wantErr)
+				return
 			}
 		})
 	}

@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+	fmt.Println(unpack.Pack("\n\n\n\n")) // \n4
 	input := flag.String("input", "", "input for Unpack/Pack")
 	inputRaw := flag.String("raw", "", "input for Unpack Raw")
 	isDaemon := flag.Bool("daemon", false, "run in daemon mode")

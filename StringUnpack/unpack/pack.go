@@ -3,6 +3,7 @@ package unpack
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -29,5 +30,5 @@ func Pack(str string) (string, error) {
 		buf.WriteString(fmt.Sprintf("%c%v", v, count))
 		count = 1
 	}
-	return buf.String(), nil
+	return strconv.Quote(buf.String()), nil
 }

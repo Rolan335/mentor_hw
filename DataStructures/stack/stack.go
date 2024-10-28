@@ -10,20 +10,20 @@ func (s *Stack) Push(elem interface{}) {
 	s.stack = append(s.stack, elem)
 }
 
-func (s *Stack) Pop() interface{} {
+func (s *Stack) Pop() (interface{}, error) {
 	if len(s.stack) == 0 {
-		return errors.New("error. Stack len is 0")
+		return nil,errors.New("error. Stack len is 0")
 	}
 	elem := s.stack[len(s.stack)-1]
 	s.stack = s.stack[:len(s.stack)-1]
-	return elem
+	return elem, nil
 }
 
-func (s Stack) Peek() interface{} {
+func (s Stack) Peek() (interface{}, error) {
 	if len(s.stack) == 0 {
-		return errors.New("error. Stack len is 0")
+		return nil, errors.New("error. Stack len is 0")
 	}
-	return s.stack[len(s.stack)-1]
+	return s.stack[len(s.stack)-1], nil
 }
 
 func (s Stack) Len() int{

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-//Вопрос рабочий ли тест? Нету want. Оставлять так или добавлять.
+// How to test void functions
 func TestQueue_Enqueue(t *testing.T) {
 	type args struct {
 		elem interface{}
@@ -36,25 +36,30 @@ func TestQueue_Enqueue(t *testing.T) {
 
 func TestQueue_Dequeue(t *testing.T) {
 	tests := []struct {
-		name string
-		q    *Queue
-		want interface{}
+		name    string
+		q       *Queue
+		want    interface{}
+		wantErr error
 	}{
 		{
 			name: "Dequeue when nil",
 			q:    &Queue{},
-			want: errors.New("error. Queue length is 0"),
+			wantErr: errors.New("error. Queue length is 0"),
 		},
 		{
 			name: "Dequeue when not nil",
-			q: &Queue{queue: []interface{}{1,"hello"}},
+			q:    &Queue{queue: []interface{}{1, "hello"}},
 			want: 1,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.q.Dequeue(); !reflect.DeepEqual(got, tt.want) {
+			got, err := tt.q.Dequeue()
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Queue.Dequeue() = %v, want %v", got, tt.want)
+			}
+			if err != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("Queue.Dequeue() = %v, want %v", got, tt.wantErr)
 			}
 		})
 	}
@@ -65,22 +70,27 @@ func TestQueue_Peek(t *testing.T) {
 		name string
 		q    Queue
 		want interface{}
+		wantErr error
 	}{
 		{
 			name: "Peek when nil",
-			q: Queue{},
-			want: errors.New("error. Queue length is 0"),
+			q:    Queue{},
+			wantErr: errors.New("error. Queue length is 0"),
 		},
 		{
 			name: "Peek when not nil",
-			q: Queue{[]interface{}{222,5.542,"hello"}},
+			q:    Queue{[]interface{}{222, 5.542, "hello"}},
 			want: 222,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.q.Peek(); !reflect.DeepEqual(got, tt.want) {
+			got, err := tt.q.Peek()
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Queue.Peek() = %v, want %v", got, tt.want)
+			}
+			if err != nil && err.Error() != tt.wantErr.Error(){
+				t.Errorf("Queue.Peek() = %v, want %v", got, tt.wantErr)
 			}
 		})
 	}
@@ -94,7 +104,7 @@ func TestQueue_Len(t *testing.T) {
 	}{
 		{
 			name: "Len",
-			q: Queue{[]interface{}{223,5,35,1}},
+			q:    Queue{[]interface{}{223, 5, 35, 1}},
 			want: 4,
 		},
 	}
