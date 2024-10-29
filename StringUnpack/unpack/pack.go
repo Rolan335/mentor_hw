@@ -18,7 +18,7 @@ func Pack(str string) (string, error) {
 		}
 		if i != len(runes)-1 {
 			if count >= 9 {
-				buf.WriteString(fmt.Sprintf("%c%v", v, count))
+				buf.WriteString(fmt.Sprintf("%c%d", v, count))
 				count = 1
 				continue
 			}
@@ -27,8 +27,10 @@ func Pack(str string) (string, error) {
 				continue
 			}
 		}
-		buf.WriteString(fmt.Sprintf("%c%v", v, count))
+		//fmt.sprintf slow better use strconv
+		buf.WriteRune(v)
+		buf.WriteString(strconv.Itoa(count))
 		count = 1
 	}
-	return strconv.Quote(buf.String()), nil
+	return buf.String(), nil
 }

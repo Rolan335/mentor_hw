@@ -1,7 +1,7 @@
 package main
 
 import (
-	"DataStructures/stack"
+	"datastruct/stack"
 	"fmt"
 )
 

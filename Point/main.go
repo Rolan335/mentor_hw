@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Point/parsepoint"
+	"point/parsepoint"
 	"flag"
 	"fmt"
 )

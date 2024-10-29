@@ -1,7 +1,7 @@
 package parsepoint
 
 import (
-	p "Point/point"
+	p "point/point"
 	"errors"
 	"fmt"
 	"strconv"

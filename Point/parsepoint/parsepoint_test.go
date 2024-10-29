@@ -1,8 +1,7 @@
-package parsepoint_test
+package parsepoint
 
 import (
-	. "Point/parsepoint"
-	p "Point/point"
+	p "point/point"
 	"fmt"
 	"testing"
 )

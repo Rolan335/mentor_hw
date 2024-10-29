@@ -19,19 +19,22 @@ func Unpack(str string, isRaw bool) (string, error) {
 		return "", errors.New("error. String cannot start with digit")
 	}
 	var buf strings.Builder
+	var vInt int
 	for i, v := range runes {
-		vInt := int(v - '0' - 1)
+		if unicode.IsDigit(v) {
+			vInt = int(v - '0' - 1)
+		}
 		if isRaw {
 			//runes[i-1] panics if checks first letter
 			if i != 0 && i != len(runes)-1 {
 				if unicode.IsDigit(v) && string(runes[i-1]) != `\` && unicode.IsDigit(runes[i+1]) {
 					return "", errors.New("error. String cannot contain numbers >9 or 00, 01, 02, etc")
 				}
-				if (unicode.IsLetter(v) && string(runes[i-1]) == `\`) || (string(v) == `\` && unicode.IsLetter(runes[i+1])){
+				if (unicode.IsLetter(v) && string(runes[i-1]) == `\`) || (string(v) == `\` && unicode.IsLetter(runes[i+1])) {
 					return "", errors.New("error. cannot escape letter in escaping mode")
 				}
 			}
-			if unicode.IsDigit(v) && string(runes[i-1]) != `\` && vInt >= 0 {
+			if unicode.IsDigit(v) && string(runes[i-1]) != `\` && vInt >= 0{
 				buf.WriteString(strings.Repeat(string(runes[i-1]), vInt))
 				continue
 			}
