@@ -34,7 +34,7 @@ func Unpack(str string, isRaw bool) (string, error) {
 					return "", errors.New("error. cannot escape letter in escaping mode")
 				}
 			}
-			if unicode.IsDigit(v) && string(runes[i-1]) != `\` && vInt >= 0{
+			if unicode.IsDigit(v) && string(runes[i-1]) != `\` && vInt >= 0 {
 				buf.WriteString(strings.Repeat(string(runes[i-1]), vInt))
 				continue
 			}

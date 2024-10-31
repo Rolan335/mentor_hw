@@ -1,0 +1,45 @@
+package main
+
+import (
+	"fmt"
+	"hw3/set"
+)
+
+func main() {
+	// cache := lrucache.New(5)
+	// cache.Set("a", "a")
+	// cache.Set("b", "b")
+	// cache.Set("c", "c")
+	// fmt.Println(cache)
+	// cache.Set("f", "f")
+	// cache.Get("b")
+	// cache.Set("n", "n")
+	// cache.Set("o", "o")
+	// cache.Set("p", "p")
+	// fmt.Println(cache)
+	// cache.Set("f", "fff")
+	// cache.Set("ff", "fff")
+	// cache.Set("fdf", "fff")
+	// fmt.Println("delete")
+	// fmt.Println(cache)
+	// cache.Delete("fdf")
+	// fmt.Println(cache)
+	// cache.Delete("o")
+	// fmt.Println(cache)
+	// res, len := cache.GetAll()
+	// fmt.Println(res, len)
+	// fmt.Println(cache.Get("ajflsa"))
+	// cache.DeleteAll()
+	// fmt.Println(cache)
+	a := set.NewVals("a", "b", "c", "d", "e")
+	fmt.Println(a.GetAll())
+	fmt.Println(a.GetAllSorted())
+	// b := set.NewVals("a", "b", "h", "i", "j")
+	// union, _ := set.Union(a,b)
+	// a.Add("f", "g", "h", "i", "j")
+	// fmt.Println(([5]string)(a.GetAll()) == [5]string{"a", "b", "c", "d", "e"})
+	// fmt.Println(union.GetAll())
+	// intersected, n := set.Intersect(a, b)
+	// fmt.Println(intersected)
+	// fmt.Println(intersected.GetAll(), n)
+}

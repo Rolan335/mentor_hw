@@ -14,6 +14,7 @@ func BenchmarkUnpackRawMode(b *testing.B) {
 		}
 	}
 }
+//BenchmarkUnpackRawMode-12        1000000              1163 ns/op             144 B/op          9 allocs/op
 
 func TestPack(t *testing.T) {
 	type args struct {
@@ -59,7 +60,6 @@ func TestPack(t *testing.T) {
 		})
 	}
 }
-
 func TestUnpack(t *testing.T) {
 	type args struct {
 		str   string
@@ -88,8 +88,8 @@ func TestUnpack(t *testing.T) {
 			wantErr: errors.New("error. String cannot contain numbers >9 or 00, 01, 02, etc"),
 		},
 		{
-			name:    "Valid string provided. Raw",
-			args:    args{`\04\24\\\3b3c1d0\\2a0\4b\2\10`, true},
+			name: "Valid string provided. Raw",
+			args: args{`\04\24\\\3b3c1d0\\2a0\4b\2\10`, true},
 			want: `00002222\3bbbc\\4b2`,
 		},
 		{
