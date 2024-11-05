@@ -1,18 +1,11 @@
 package set
 
-import (
-	"slices"
-	"strings"
-)
+//maps.Keys()
 
 // Stores unique passed values
 type Set struct {
 	set map[string]struct{}
 }
-
-func New() *Set {    
-	return &Set{make(map[string]struct{})}        
-}    
 
 // Create set with values
 func NewVals(input ...string) *Set {
@@ -60,19 +53,11 @@ func (s *Set) GetAll() []string {
 	return slice
 }
 
-func (s *Set) GetAllSorted() []string {
-	slice := s.GetAll()
-	slices.SortFunc(slice, func(a, b string) int {
-		return strings.Compare(strings.ToLower(a), strings.ToLower(b))
-	})
-	return slice
-}
-
 // Returns len of new set
 func Union(a, b *Set) (*Set, int) {
-	vals := append(a.GetAll(), b.GetAll()...)
-	newSet := NewVals(vals...)
-	return newSet, len(newSet.set)
+	union := NewVals(a.GetAll()...)
+	union.Add(b.GetAll()...)
+	return union, len(union.GetAll())
 }
 
 // a - b
@@ -84,7 +69,7 @@ func SubstractTwo(a, b *Set) (*Set, int) {
 
 // Returns count intersected
 func Intersect(a, b *Set) (*Set, int) {
-	setNew := New()
+	setNew := NewVals()
 	count := 0
 	for k := range a.set {
 		if _, ok := b.set[k]; ok {

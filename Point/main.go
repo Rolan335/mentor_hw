@@ -1,12 +1,17 @@
 package main
 
 import (
-	"point/parsepoint"
 	"flag"
 	"fmt"
+	"point/parsepoint"
+	"point/point"
 )
 
 func main() {
+	var polygon point.Polygon
+	polygon.AddPoint(point.Point{X: 1, Y: 1}, point.Point{X: 1, Y: -1}, point.Point{X: -1, Y: -1}, point.Point{X: -1, Y: 1})
+	fmt.Println(polygon)
+	fmt.Println(polygon.GetPerimeter())
 	action := flag.Bool("action", true, "true - calcDistance false - IsInRadius")
 	p1 := flag.String("point1", "0,0", "type (x,y) for first point")
 	p2 := flag.String("point2", "0,0", "type (x,y) for second point")

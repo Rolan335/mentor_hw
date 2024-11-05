@@ -1,4 +1,4 @@
-package lrucache
+package lrucache_refactor
 
 import (
 	"math/rand"
@@ -7,6 +7,12 @@ import (
 	"testing"
 )
 
+// v1
+// BenchmarkLRUCache_Set_Get-12              100000              2555 ns/op             153 B/op          3 allocs/op
+// BenchmarkLRUCache_Set_Get-12              200000            415074 ns/op          843798 B/op          3 allocs/op
+// v2
+// BenchmarkLRUCache_Set_Get-12              100000              2003 ns/op             139 B/op          2 allocs/op
+// BenchmarkLRUCache_Set_Get-12              200000           1545357 ns/op              92 B/op          2 allocs/op
 func BenchmarkLRUCache_Set_Get(b *testing.B) {
 	cache := New(50000)
 	for i := 1; i < b.N; i++ {
@@ -23,8 +29,6 @@ func BenchmarkLRUCache_Set_Get(b *testing.B) {
 	}
 }
 
-//BenchmarkLRUCache_Set_Get-12              100000              2555 ns/op             153 B/op          3 allocs/op
-
 func TestLRUCache_All(t *testing.T) {
 	cache := New(3)
 	cache.Set("a", "a")
@@ -32,38 +36,38 @@ func TestLRUCache_All(t *testing.T) {
 	cache.Set("c", "c")
 	cache.Set("d", "d")
 	want := map[string]any{"b": "b", "c": "c", "d": "d"}
-	got, _ := cache.GetAll()
+	got := cache.GetAll()
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("LRUCache() set d. want = %v got = %v", want, got)
 	}
 	cache.Get("c")
 	cache.Set("e", "e")
 	want = map[string]any{"d": "d", "c": "c", "e": "e"}
-	got, _ = cache.GetAll()
+	got = cache.GetAll()
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("LRUCache() get c set e. want = %v got = %v", want, got)
 	}
 	cache.Set("f", "f")
 	want = map[string]any{"c": "c", "e": "e", "f": "f"}
-	got, _ = cache.GetAll()
+	got = cache.GetAll()
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("LRUCache() set f. want = %v got = %v", want, got)
 	}
 	cache.Delete("c")
 	want = map[string]any{"e": "e", "f": "f"}
-	got, _ = cache.GetAll()
+	got = cache.GetAll()
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("LRUCache() delete c. want = %v got = %v", want, got)
 	}
 	cache.Set("g", "g")
 	want = map[string]any{"e": "e", "f": "f", "g": "g"}
-	got, _ = cache.GetAll()
+	got = cache.GetAll()
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("LRUCache() set g. want = %v got = %v", want, got)
 	}
 	cache.DeleteAll()
 	want = map[string]any{}
-	got, _ = cache.GetAll()
+	got = cache.GetAll()
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("LRUCache.deleteAll() want = %v got = %v", want, got)
 	}
@@ -79,7 +83,6 @@ func TestLRUCache_Set(t *testing.T) {
 		v any
 	}
 	tests := []struct {
-		wantBool bool
 		cacheNew map[string]any
 		name     string
 		l        *LRUCache
@@ -90,37 +93,30 @@ func TestLRUCache_Set(t *testing.T) {
 			l:        cache,
 			args:     args{"d", "d"},
 			cacheNew: map[string]any{"a": "a", "b": "b", "c": "c", "d": "d"},
-			wantBool: true,
 		},
 		{
 			name:     "add when full. Delete last used elem",
 			l:        cache,
 			args:     args{"e", "e"},
 			cacheNew: map[string]any{"b": "b", "c": "c", "d": "d", "e": "e"},
-			wantBool: true,
 		},
 		{
 			name:     "rewrite existed value",
 			l:        cache,
 			args:     args{"b", "bb"},
 			cacheNew: map[string]any{"c": "c", "d": "d", "e": "e", "b": "bb"},
-			wantBool: false,
 		},
 		{
 			name:     "add when full. Delete last used elem after rewrite",
 			l:        cache,
 			args:     args{"f", "f"},
 			cacheNew: map[string]any{"d": "d", "e": "e", "b": "bb", "f": "f"},
-			wantBool: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotSet := cache.Set(tt.args.k, tt.args.v)
-			got, _ := cache.GetAll()
-			if gotSet != tt.wantBool {
-				t.Errorf("LRUCache.Set() return = %v want = %v", gotSet, tt.wantBool)
-			}
+			cache.Set(tt.args.k, tt.args.v)
+			got := cache.GetAll()
 			if !reflect.DeepEqual(got, tt.cacheNew) {
 				t.Errorf("LRUCache.Set() cache = %v want = %v", got, tt.cacheNew)
 			}
@@ -177,13 +173,10 @@ func TestLRUCache_GetAll(t *testing.T) {
 	cache.Set("4", 5)
 	cache.Set("5", 5)
 	cache.Set("6", 5)
-	wantMap, wantLen := map[string]any{"6": 5, "2": 5, "3": 5, "4": 5, "5": 5}, cap
-	gotMap, gotLen := cache.GetAll()
+	wantMap := map[string]any{"6": 5, "2": 5, "3": 5, "4": 5, "5": 5}
+	gotMap := cache.GetAll()
 	if !reflect.DeepEqual(wantMap, gotMap) {
 		t.Errorf("LRUCache.GetAll() wantMap = %v gotMap = %v", wantMap, gotMap)
-	}
-	if wantLen != gotLen {
-		t.Errorf("LRUCache.GetAll() wantLen = %v gotLen = %v", wantLen, gotLen)
 	}
 }
 
@@ -217,7 +210,7 @@ func TestLRUCache_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotDel := cache.Delete(tt.key)
-			gotCache, _ := cache.GetAll()
+			gotCache := cache.GetAll()
 			if gotDel != tt.want {
 				t.Errorf("LRUCache.Delete() return = %v want = %v", gotDel, tt.want)
 			}
@@ -240,15 +233,5 @@ func TestLRUCache_DeleteAll(t *testing.T) {
 	want := New(cap)
 	if !reflect.DeepEqual(cache, want) {
 		t.Errorf("LRUCache.DeleteAll() got = %v want = %v", cache, want)
-	}
-}
-
-func Test_elemToStart(t *testing.T) {
-	slice := []string{"a", "b", "c", "d", "e", "f", "g"}
-	key := "g"
-	got := elemToStart(slice, key)
-	want := []string{"g", "a", "b", "c", "d", "e", "f"}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("elemToStart() got = %v want = %v", got, want)
 	}
 }

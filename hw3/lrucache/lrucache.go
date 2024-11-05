@@ -2,16 +2,19 @@ package lrucache
 
 import "slices"
 
+//Переписать всё на односвязный список.
 type LRUCache struct {
 	cap      int
 	data     map[string]any
 	whenUsed []string
 }
 
+//Явно задать значения
 func New(cap int) *LRUCache {
-	return &LRUCache{cap, make(map[string]any, cap), make([]string, 0, cap)}
+	return &LRUCache{cap: cap, data: make(map[string]any, cap), whenUsed: make([]string, 0, cap)}
 }
 
+//убрать false true
 //returns false if key rewrited, true if added
 func (l *LRUCache) Set(k string, v any) bool {
 	//Check if key needs to be overwritten
@@ -40,6 +43,7 @@ func (l *LRUCache) Get(k string) (any, bool) {
 	return v, ok
 }
 
+//Не возвращать длину.
 //returns map and count
 func (l *LRUCache) GetAll() (map[string]any, int) {
 	return l.data, len(l.data)

@@ -1,6 +1,7 @@
 package point
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -16,13 +17,19 @@ func (p Point) IsInRadius(p2 Point, n float64) bool {
 	return p.CalcDistance(p2) <= n
 }
 
-type Polygon struct {
-	Point []Point
+type Polygon []Point
+
+func (p *Polygon) AddPoint(slice ...Point) {
+	for _, v := range slice {
+		*p = append(*p, v)
+	}
 }
 
-// ---
-type Polygon2 []Point
-
-func (p Polygon2) Test() {
-
+func (p Polygon) GetPerimeter() float64 {
+	perimeter := p[0].CalcDistance(p[len(p) - 1])
+	for i := 0; i < len(p) - 1; i++{
+		fmt.Println(perimeter)
+		perimeter += p[i].CalcDistance(p[i+1])
+	}
+	return perimeter
 }

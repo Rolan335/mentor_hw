@@ -17,7 +17,7 @@ func Unpack(str string, isRaw bool) (string, error) {
 	if str == "" {
 		return "", nil
 	}
-	if unicode.IsDigit([]rune(str)[0]) {
+	if rune(str[0]) > '0' && rune(str[0]) < '9' {
 		return "", ErrStartWithDigit
 	}
 	if isRaw {
@@ -33,6 +33,7 @@ func basicMode(str string) (string, error) {
 		if i != len(runes)-1 && runes[i+1] == '0' || runes[i] == '0' {
 			continue
 		}
+		//utf8 get rune by index check.
 		if unicode.IsDigit(v) && unicode.IsDigit(runes[i-1]) {
 			return "", ErrContainNum
 		}

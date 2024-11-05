@@ -2,16 +2,20 @@ package set
 
 import (
 	"reflect"
+	"slices"
+	"strings"
 	"testing"
 )
 
 func TestSet_New_Add_GetAllSorted(t *testing.T) {
-	a := New()
+	a := NewVals()
 	a.Add("a", "b", "c", "d", "e")
-	const len = 5
-	got := ([len]string)(a.GetAllSorted())
-	want := [len]string{"a", "b", "c", "d", "e"}
-	if got != want {
+	got := a.GetAll()
+	slices.SortFunc(got, func(a, b string) int {
+		return strings.Compare(strings.ToLower(a), strings.ToLower(b))
+	})
+	want := []string{"a", "b", "c", "d", "e"}
+	if !reflect.DeepEqual(got, want) {
 		t.Errorf("a := New() a.Add() got = %v want = %v", got, want)
 	}
 }
@@ -19,10 +23,12 @@ func TestSet_New_Add_GetAllSorted(t *testing.T) {
 func TestSet_Delete(t *testing.T) {
 	a := NewVals("a", "b", "c", "d", "e")
 	a.Delete("c", "d", "e")
-	const len = 2
-	got := ([len]string)(a.GetAllSorted())
-	want := [len]string{"a", "b"}
-	if got != want {
+	got := a.GetAll()
+	slices.SortFunc(got, func(a, b string) int {
+		return strings.Compare(strings.ToLower(a), strings.ToLower(b))
+	})
+	want := []string{"a", "b"}
+	if !reflect.DeepEqual(got, want) {
 		t.Errorf("a.Delete() got = %v want = %v", got, want)
 	}
 }

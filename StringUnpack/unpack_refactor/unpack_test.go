@@ -14,8 +14,8 @@ func BenchmarkUnpackRawMode(b *testing.B) {
 		}
 	}
 }
-//BenchmarkUnpackRawMode-12    	 1372424	       863.6 ns/op	     144 B/op	       9 allocs/op
 
+//BenchmarkUnpackRawMode-12    	 1372424	       863.6 ns/op	     144 B/op	       9 allocs/op
 
 func BenchmarkPack(b *testing.B) {
 	input := `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbjjjjjkuwqorjoajsfnjjjjjjoooooiiiiiewklllllllfnnnnnnndjdddjkll`
@@ -26,6 +26,14 @@ func BenchmarkPack(b *testing.B) {
 		}
 	}
 }
+
+//V3
+//BenchmarkPack-12    	 1606328	       762.3 ns/op	     248 B/op	       5 allocs/op
+
+//V2
+//BenchmarkPack-12    	  876634	      1183 ns/op	     760 B/op	       6 allocs/op
+
+//V1
 //BenchmarkPack-12          100000              1848 ns/op             776 B/op         12 allocs/op
 
 func TestPack(t *testing.T) {
@@ -51,7 +59,8 @@ func TestPack(t *testing.T) {
 		{
 			name:    "String with digit.",
 			args:    args{"ksaf2"},
-			wantErr: errors.New("error. Cannot use digits"),
+			wantErr: errors.New("Cannot use digits"),
+			want: "",
 		},
 		{
 			name: "Empty string",
