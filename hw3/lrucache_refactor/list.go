@@ -1,29 +1,49 @@
 package lrucache_refactor
 
-type List struct {
-	Len int
-	head *Node
+type list struct {
+	len  int
+	head *node
 }
 
-type Node struct {
+type node struct {
 	data string
-	next *Node
+	next *node
 }
 
-func NewList() *List {
-	return &List{head: nil}
+func newList() *list {
+	return &list{head: nil}
 }
 
-func (l *List) AddToStart(d string) {
-	l.Len++
+func (l *list) addToStart(d string) {
+	l.len++
 	if l.head == nil {
-		l.head = &Node{data: d, next: nil}
+		l.head = &node{data: d, next: nil}
 		return
 	}
-	l.head = &Node{data: d, next: l.head}
+	l.head = &node{data: d, next: l.head}
 }
 
-func (l *List) GetEndVal() string {
+func (l *list) moveToStart(d string) {
+	if l.head == nil || l.head.data == d {
+		return
+	}
+	var prev *node
+	current := l.head
+	for current != nil && current.data != d {
+		prev = current
+		current = current.next
+	}
+	if current == nil {
+		return
+	}
+	if prev != nil {
+		prev.next = current.next
+	}
+	current.next = l.head
+	l.head = current
+}
+
+func (l *list) getEndVal() string {
 	if l.head == nil {
 		return ""
 	}
@@ -34,46 +54,22 @@ func (l *List) GetEndVal() string {
 	return current.data
 }
 
-func (l *List) Remove(d string) {
+func (l *list) remove(d string) {
 	if l.head == nil {
 		return
 	}
 	current := l.head
 	if l.head.data == d {
 		l.head = l.head.next
-		l.Len--
+		l.len--
 		return
 	}
 	for current.next != nil {
 		if current.next.data == d {
 			current.next = current.next.next
-			l.Len--
+			l.len--
 			return
 		}
 		current = current.next
 	}
-
 }
-
-func (l *List) ShowAsSlice() []string {
-	slice := make([]string, 0)
-	current := l.head
-	for current != nil {
-		slice = append(slice, current.data)
-		current = current.next
-	}
-	return slice
-}
-
-// func (l *List) AddToEnd(d string) {
-// 	newNode := &Node{data: d, next: nil}
-// 	if l.head == nil {
-// 		l.head = newNode
-// 		return
-// 	}
-// 	current := l.head
-// 	for current.next != nil {
-// 		current = current.next
-// 	}
-// 	current.next = newNode
-// }

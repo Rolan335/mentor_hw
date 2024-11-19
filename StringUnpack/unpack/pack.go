@@ -27,7 +27,6 @@ func Pack(str string) (string, error) {
 				continue
 			}
 		}
-		//fmt.sprintf slow better use strconv
 		buf.WriteRune(v)
 		buf.WriteString(strconv.Itoa(count))
 		count = 1

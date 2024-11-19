@@ -7,12 +7,14 @@ import (
 	"testing"
 )
 
-// v1
+// v1 (slices)
 // BenchmarkLRUCache_Set_Get-12              100000              2555 ns/op             153 B/op          3 allocs/op
 // BenchmarkLRUCache_Set_Get-12              200000            415074 ns/op          843798 B/op          3 allocs/op
-// v2
+// v2 (linkedList)
 // BenchmarkLRUCache_Set_Get-12              100000              2003 ns/op             139 B/op          2 allocs/op
 // BenchmarkLRUCache_Set_Get-12              200000           1545357 ns/op              92 B/op          2 allocs/op
+// v3 (MoveToStart instead of Remove and addToStart)
+// BenchmarkLRUCache_Set_Get-12              200000            480551 ns/op              63 B/op          2 allocs/op
 func BenchmarkLRUCache_Set_Get(b *testing.B) {
 	cache := New(50000)
 	for i := 1; i < b.N; i++ {
