@@ -1,92 +1,86 @@
 package pi
 
 import (
-	"fmt"
 	"math"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 )
 
-func calcRow(wg *sync.WaitGroup, i int, sumCh chan float64) {
-	defer wg.Done()
-	sum := math.Pow(float64(-1), float64(i)) / float64(2*i+1)
-	sumCh <- sum
+type PiCalculator struct {
+	maxIters int
+	workers  int
+	sumCh    chan float64
+	sigCh    chan struct{}
+	//DoneCh will be closed when iters maxItersCompleted
+	DoneCh chan struct{}
+	wg     *sync.WaitGroup
 }
 
-func Pi(input int) float64 {
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-	var wg sync.WaitGroup
+func NewPiCalculator(workersNum int, iters int) *PiCalculator {
+	return &PiCalculator{
+		maxIters: iters,
+		workers:  workersNum,
+		sumCh:    make(chan float64, workersNum),
+		sigCh:    make(chan struct{}),
+		DoneCh:   make(chan struct{}),
+		wg:       &sync.WaitGroup{},
+	}
+}
+
+func (p *PiCalculator) Calc() {
+	go p.isDone()
+	for i := range p.workers {
+		p.wg.Add(1)
+		go p.calcRow(i)
+	}
+}
+
+func (p *PiCalculator) End() float64 {
+	close(p.sigCh)
+	p.wg.Wait()
+	close(p.sumCh)
 	var sum float64
-	var sumCh chan float64
-	rowCounter := 0
-	ticker := 0
-	for {
+	for v := range p.sumCh {
+		sum += v
+	}
+	return sum * 4
+}
+
+func (p *PiCalculator) calcRow(i int) {
+	defer p.wg.Done()
+	var sum float64
+	for range p.maxIters {
 		select {
-		case <-sig:
-			close(sig)
-			wg.Wait()
-			fmt.Println(ticker * input)
-			return sum * 4
+		case <-p.sigCh:
+			p.sumCh <- sum
+			return
 		default:
-			ticker++
-			sumCh = make(chan float64, input)
-			for i := 0; i < input; i++ {
-				wg.Add(1)
-				go calcRow(&wg, rowCounter+i, sumCh)
-			}
-			wg.Wait()
-			close(sumCh)
-			for v := range sumCh {
-				sum += v
-			}
-			rowCounter += input
+			sum += math.Pow(float64(-1), float64(i)) / float64(2*i+1)
+			i += p.workers
+		}
+	}
+	p.sumCh <- sum
+}
+
+func (p *PiCalculator) isDone() {
+	for {
+		if len(p.sumCh) == p.workers {
+			close(p.DoneCh)
+			return
 		}
 	}
 }
 
-//Количество итераций не синхронизировано
-// func calcRow(i int, input int, sig <-chan os.Signal, sumCh chan<- float64, wg *sync.WaitGroup) {
-// 	defer wg.Done()
-// 	var sum float64
-// 	ticker := 0
-// 	//считаем свои числа ряда в default до того, как получим сигнал syscall
-// 	for {
-// 		select {
-// 		case <-sig:
-// 			sumCh <- sum
-// 			fmt.Println(ticker)
-// 			return
-// 		default:
-// 			sum += math.Pow(float64(-1), float64(i)) / float64(2*i+1)
-// 			i += input
-// 			ticker++
+// func (p *PiCalculator) EndWhenReady() <-chan float64 {
+// 	resCh := make(chan float64)
+// 	go func() {
+// 		p.wg.Wait()
+// 		close(p.sumCh)
+// 		close(p.sigCh)
+// 		var sum float64
+// 		for v := range p.sumCh {
+// 			sum += v
 // 		}
-// 	}
-// }
-
-// func Pi(input int) float64 {
-// 	sig := make(chan os.Signal, 1)
-// 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-// 	sumCh := make(chan float64, input)
-// 	var wg sync.WaitGroup
-
-// 	for i := 0; i < input; i++ {
-// 		wg.Add(1)
-// 		go calcRow(i, input, sig, sumCh, &wg)
-// 	}
-// 	<-sig
-
-// 	close(sig)
-// 	wg.Wait()
-// 	close(sumCh)
-
-// 	var sum float64
-// 	for i := range sumCh {
-// 		sum += i
-// 	}
-// 	sum *= 4
-// 	return sum
+// 		resCh <- sum * 4
+// 	}()
+// 	return resCh
 // }
