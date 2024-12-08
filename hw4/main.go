@@ -8,14 +8,13 @@ import (
 )
 
 func main() {
-	semaphore := semaphore.NewSemaphoreCond(2)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	semaphore := semaphore.NewSemaphoreMu(5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 100)
 	defer cancel()
 	timer := time.Now()
 	done := 0
 	for i := range 10 {
 		err := semaphore.Acquire(ctx, 1)
-		fmt.Println(err)
 		if err == nil {
 			go func() {
 				defer semaphore.Release(1)

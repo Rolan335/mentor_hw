@@ -4,6 +4,7 @@ use (
 	./datastruct
 	./hw3
 	./hw4
+	./hw5
 	./point
 	./stringunpack
 )
