@@ -94,20 +94,6 @@ func (s *SemaphoreChan) Release(want int64) {
 	}
 }
 
-// type SemaphoreAtomic struct{
-// 	closed int32
-// 	len int64
-// 	cap int64
-// }
-
-// func NewSemaphoreAtomic(cap int64) *SemaphoreAtomic{
-// 	return &SemaphoreAtomic{closed: 0, len: 0, cap: cap}
-// }
-
-// func (s *SemaphoreAtomic) Acquire(ctx context.Context, want int64){
-
-// }
-
 type SemaphoreCond struct {
 	mu   sync.Mutex
 	cond *sync.Cond

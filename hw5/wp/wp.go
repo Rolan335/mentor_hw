@@ -12,7 +12,7 @@ type Task func() error
 
 type WorkerPool struct {
 	workersDone int64
-	workersMax  int
+	workersMax  int64
 	errCount    int64
 	errMax      int64
 	doneCh      chan struct{}
@@ -22,29 +22,27 @@ type WorkerPool struct {
 func NewWorkerPool(workersMax int, errMax int) *WorkerPool {
 	return &WorkerPool{
 		workersDone: 0,
-		workersMax:  workersMax,
+		workersMax:  int64(workersMax),
 		errCount:    0,
 		errMax:      int64(errMax),
 		doneCh:      make(chan struct{}),
-		tasks:       make(chan Task),
+		tasks:       make(chan Task, workersMax),
 	}
 }
 
-// Add Tasks to queue, proceed and return res.
+// Add Tasks to queue and proceed.
 func (w *WorkerPool) ProceedTasks(tasks []Task) error {
 	//we need at least one worker
 	if w.workersMax <= 0 {
 		w.workersMax = 1
 	}
 	// if more workers than tasks, we need only workers == tasks number of workers
-	if w.workersMax > len(tasks) {
-		w.workersMax = len(tasks)
+	if w.workersMax > int64(len(tasks)) {
+		w.workersMax = int64(len(tasks))
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go w.checkForErrors(cancel)
-
 	//sending tasks to workers
 	go w.send(ctx, tasks)
 
@@ -53,70 +51,74 @@ func (w *WorkerPool) ProceedTasks(tasks []Task) error {
 	}
 	go w.kill(ctx, len(tasks))
 
+	err := w.checkForErrors(cancel)
+	if err != nil {
+		return err
+	}
 	select {
-	case <-ctx.Done():
-		close(w.doneCh)
-		return ErrErrorsLimitExceeded
 	case <-w.doneCh:
 		return nil
+	
 	}
 }
 
 func (w *WorkerPool) send(ctx context.Context, tasks []Task) {
+	defer close(w.tasks)
 	for _, v := range tasks {
 		select {
 		case <-ctx.Done():
-			close(w.tasks)
 			return
 		case w.tasks <- v:
 		}
 	}
-	close(w.tasks)
 }
 
 func (w *WorkerPool) kill(ctx context.Context, taskCount int) {
-loop:
 	for {
 		select {
 		case <-ctx.Done():
-			break loop
+			return
 		default:
 			if w.workersDone >= int64(taskCount) {
 				close(w.doneCh)
-				break loop
-			}
-		}
-	}
-}
-
-func (w *WorkerPool) checkForErrors(cancel context.CancelFunc) {
-	//stop function so it won't be checking errors
-	if w.errMax < 0 {
-		return
-	}
-	//cancel all work and will return error
-	if w.errMax == 0 {
-		cancel()
-		return
-	}
-	for {
-		select {
-		case <-w.doneCh:
-			return
-		default:
-			if w.errCount >= w.errMax {
-				cancel()
 				return
 			}
 		}
 	}
 }
+
+func (w *WorkerPool) checkForErrors(cancel context.CancelFunc) error {
+	//stop function so it won't be checking errors
+	if w.errMax < 0 {
+		return nil
+	}
+	//cancel all work and will return error
+	if w.errMax == 0 {
+		cancel()
+		return ErrErrorsLimitExceeded
+	}
+	for {
+		select {
+		case <-w.doneCh:
+			return nil
+		default:
+			if w.errCount >= w.errMax {
+				cancel()
+				return ErrErrorsLimitExceeded
+			}
+		}
+	}
+}
+
 func (w *WorkerPool) work(ctx context.Context) {
-	for v := range w.tasks {
+	for {
 		select {
 		case <-ctx.Done():
 			return
-		default:
+		case v, ok := <-w.tasks:
+			if !ok {
+				return
+			}
 			err := v()
 			if err != nil {
 				atomic.AddInt64(&w.errCount, 1)
