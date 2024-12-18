@@ -3,6 +3,7 @@ package semaphore
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 )
 
 type Semaphore interface {
@@ -12,14 +13,14 @@ type Semaphore interface {
 }
 
 type SemaphoreMu struct {
-	mu     sync.Mutex
+	mu     *sync.Mutex
 	locked bool
 	len    int64
 	cap    int64
 }
 
 func NewSemaphoreMu(want int64) *SemaphoreMu {
-	return &SemaphoreMu{mu: sync.Mutex{}, len: 0, cap: want, locked: false}
+	return &SemaphoreMu{mu: &sync.Mutex{}, len: 0, cap: want, locked: false}
 }
 
 func (s *SemaphoreMu) Acquire(ctx context.Context, want int64) error {
@@ -27,20 +28,20 @@ func (s *SemaphoreMu) Acquire(ctx context.Context, want int64) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
-		if want+s.len >= s.cap {
+		if atomic.LoadInt64(&want)+atomic.LoadInt64(&s.len) > atomic.LoadInt64(&s.cap) {
 			s.locked = true
 			s.mu.Lock()
 		}
-		s.len += want
+		atomic.AddInt64(&s.len, want)
 		return nil
 	}
 }
 
 func (s *SemaphoreMu) TryAcquire(want int64) bool {
-	if want+s.len > s.cap {
+	if atomic.LoadInt64(&want)+atomic.LoadInt64(&s.len) > atomic.LoadInt64(&s.cap) {
 		return false
 	}
-	s.len += want
+	atomic.AddInt64(&s.len, want)
 	return true
 }
 
@@ -49,7 +50,7 @@ func (s *SemaphoreMu) Release(want int64) {
 		s.locked = false
 		s.mu.Unlock()
 	}
-	s.len -= want
+	atomic.AddInt64(&s.len, -want)
 }
 
 type SemaphoreChan struct {

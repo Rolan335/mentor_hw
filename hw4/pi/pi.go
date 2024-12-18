@@ -10,9 +10,8 @@ type PiCalculator struct {
 	workers  int
 	sumCh    chan float64
 	sigCh    chan struct{}
-	//DoneCh will be closed when iters maxItersCompleted
-	DoneCh chan struct{}
-	wg     *sync.WaitGroup
+	doneCh   chan struct{}
+	wg       *sync.WaitGroup
 }
 
 func NewPiCalculator(workersNum int, iters int) *PiCalculator {
@@ -21,19 +20,20 @@ func NewPiCalculator(workersNum int, iters int) *PiCalculator {
 		workers:  workersNum,
 		sumCh:    make(chan float64, workersNum),
 		sigCh:    make(chan struct{}),
-		DoneCh:   make(chan struct{}),
+		doneCh:   make(chan struct{}),
 		wg:       &sync.WaitGroup{},
 	}
 }
 
+// function to start calculations
 func (p *PiCalculator) Calc() {
-	go p.isDone()
 	for i := range p.workers {
 		p.wg.Add(1)
 		go p.calcRow(i)
 	}
 }
 
+// function to get results, should be called after sig of termination is passed or when <-p.DoneCh() closed
 func (p *PiCalculator) End() float64 {
 	close(p.sigCh)
 	p.wg.Wait()
@@ -48,7 +48,7 @@ func (p *PiCalculator) End() float64 {
 func (p *PiCalculator) calcRow(i int) {
 	defer p.wg.Done()
 	var sum float64
-	for range p.maxIters {
+	for range p.maxIters / p.workers {
 		select {
 		case <-p.sigCh:
 			p.sumCh <- sum
@@ -61,26 +61,20 @@ func (p *PiCalculator) calcRow(i int) {
 	p.sumCh <- sum
 }
 
-func (p *PiCalculator) isDone() {
-	for {
-		if len(p.sumCh) == p.workers {
-			close(p.DoneCh)
-			return
+// returns a channel that will be closed that maxIters completed or when signal from outer sent
+func (p *PiCalculator) DoneCh() <-chan struct{} {
+	go func() {
+		defer close(p.doneCh)
+		for {
+			select {
+			case <-p.sigCh:
+				return
+			default:
+				if len(p.sumCh) == p.workers {
+					return
+				}
+			}
 		}
-	}
+	}()
+	return p.doneCh
 }
-
-// func (p *PiCalculator) EndWhenReady() <-chan float64 {
-// 	resCh := make(chan float64)
-// 	go func() {
-// 		p.wg.Wait()
-// 		close(p.sumCh)
-// 		close(p.sigCh)
-// 		var sum float64
-// 		for v := range p.sumCh {
-// 			sum += v
-// 		}
-// 		resCh <- sum * 4
-// 	}()
-// 	return resCh
-// }

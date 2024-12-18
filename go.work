@@ -5,6 +5,7 @@ use (
 	./hw3
 	./hw4
 	./hw5
+	./metrics
 	./point
 	./stringunpack
 )
